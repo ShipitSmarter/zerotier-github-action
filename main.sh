@@ -21,11 +21,20 @@ echo "⏁  Authorizing Runner to ZeroTier network"
 MAX_RETRIES=10
 RETRY_COUNT=0
 
-while ! curl -s -X POST \
-  -H "Authorization: token $AUTH_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Zerotier GitHub Member '"${GITHUB_SHA::7}"'", "description": "Member created by '"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"'", "config":{"authorized":true}}' \
-  "$API_URL/network/$NETWORK_ID/member/${member_id}" | grep '"authorized":true'; do
+while true; do
+  curl -s -X POST \
+    -H "Authorization: token $AUTH_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"name":"Zerotier GitHub Member '"${GITHUB_SHA::7}"'", "description": "Member created by '"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"'", "config":{"authorized":true}}' \
+    "$API_URL/network/$NETWORK_ID/member/${member_id}"
+
+  sleep 1
+
+  curl -s -X GET \
+    -H "Authorization: token $AUTH_TOKEN" \
+    -H "Content-Type: application/json" \
+    "$API_URL/network/$NETWORK_ID/member/${member_id}" | jq '.config.authorized' -r | grep true && break;
+
   RETRY_COUNT=$((RETRY_COUNT + 1))
 
   if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
