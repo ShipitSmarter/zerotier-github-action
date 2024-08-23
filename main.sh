@@ -12,7 +12,7 @@ MINGW64_NT?*)
   member_id=$("${ztcli}" info | awk '{ print $3 }')
   ;;
 *)
-  . $GITHUB_ACTION_PATH/util/install.sh &>/dev/null
+  . $GITHUB_ACTION_PATH/util/install.sh
   member_id=$(sudo zerotier-cli info | awk '{ print $3 }')
   ;;
 esac
